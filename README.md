@@ -11,7 +11,7 @@
 
   ### download prebuild binary
 
-  - [](windows)
+  - [windows](https://github.com/enthus1ast/countFasta/blob/master/fastalib.exe)
 
 ## usage:
 
