@@ -1,19 +1,19 @@
-High performance tool to (correctly) count sequences in a fasta file.
+# High performance tool to (correctly) count sequences in a fasta file.
 
-# How to get it:
+## How to get it:
 
-  ## build it yourself
+  ### build it yourself
   with Nim ( https://nim-lang.org ):
 
   ```
     nim c -d:release --opt:speed -d:danger -r "fastalib.nim"
   ```
 
-  ## download prebuild binary
+  ### download prebuild binary
 
   - [](windows)
 
-# usage:
+## usage:
 
   Count sequences in fasta files:
 
