@@ -6,7 +6,7 @@
   with Nim ( https://nim-lang.org ):
 
   ```
-    nim c -d:release --opt:speed -d:danger -r "fastalib.nim"
+    nim c -d:release --opt:speed -d:danger --passl:-s "fastalib.nim"
   ```
 
   ### download prebuild binary
