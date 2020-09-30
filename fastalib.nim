@@ -57,6 +57,11 @@ proc cnt*(path: string): uint =
   result = memfile.cnt()
   memfile.close()
 
+proc cntReport*(path: string): uint =
+  var memfile = memfiles.open(path)
+  result = memfile.cntReport()
+  memfile.close()
+
 when isMainModule:
   import cligen
   import os
