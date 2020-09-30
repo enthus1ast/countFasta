@@ -1,0 +1,4 @@
+nimcache/*
+testresults/*
+outputGotten.txt
+*.exe

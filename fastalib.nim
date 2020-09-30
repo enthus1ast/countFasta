@@ -69,8 +69,8 @@ when isMainModule:
   proc count(paths: string) =
     ## Counts sequences in fasta files:
     ## Usage:
-    ##  cntfasta mycnt -p myFastaFile.fasta
-    ##  cntfasta mycnt -p *.fasta
+    ##  cntfasta count -p myFastaFile.fasta
+    ##  cntfasta count -p *.fasta
     for path in walkPattern(paths):
       var memfile = memfiles.open(path)
       echo cnt(memfile) , "\t", path
@@ -78,6 +78,9 @@ when isMainModule:
 
   proc report(paths: string) =
     ## Reports sequences that contains a '>' somewhere in description.
+    ## Usage:
+    ##  cntfasta report -p myFastaFile.fasta
+    ##  cntfasta report -p *.fasta
     for path in walkPattern(paths):
       var memfile = memfiles.open(path)
       echo cntReport(memfile) , "\t", path
