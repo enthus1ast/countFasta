@@ -1,5 +1,5 @@
 # compile with:
-# nim c -d:release --opt:speed -d:danger -r "more.nim"
+# nim c -d:release --opt:speed -d:danger -r "fastalib.nim"
 import memfiles
 
 template `[]`(mem: pointer, pos: uint): char =
