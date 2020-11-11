@@ -1,5 +1,5 @@
 # compile with:
-# nim c -d:release --opt:speed -d:danger -r "more.nim"
+# nim c -d:release --opt:speed -d:danger -r "fastalib.nim"
 import memfiles
 
 template `[]`(mem: pointer, pos: uint32): char =
@@ -75,12 +75,8 @@ proc countThread(params: ThreadParam) = # {.thread, gcsafe.} =
   # memfiles.close(memfile) # excepts SOMETIMES wtf
 
 when isMainModule:
-  import cligen
-  import os
-  import threadpool
-  import cpuinfo
+  import cligen, os, threadpool, json
   var reportChan: ReportChan
-  import json
   reportChan.open()
 
   proc count(paths: string, jsonl = false) =
