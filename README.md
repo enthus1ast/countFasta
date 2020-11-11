@@ -1,4 +1,6 @@
-# High performance tool to (correctly) count sequences in a fasta file.
+# High performance tool to (correctly) count sequences in fasta files.
+
+On my testmachine it counts all sequences, 10gb of fasta files, in about 5 seconds.
 
 ## How to get it:
 
@@ -22,6 +24,15 @@
     92169   tt.fasta
     737352  tt2.fasta
   ```
+
+Output sequences as jsonl:
+
+```
+    fastalib.exe count -p *.fasta -j
+    {"path":"C:\\Users\\david\\Documents\\FASTA\\tt2.fasta","cnt":737352}
+    # ...
+```
+
 
   Count sequences in fasta file, but also report sequences where an additional ">" is in the description.
   These lines give wrong result when just counting ">" in an editor or with grep.
