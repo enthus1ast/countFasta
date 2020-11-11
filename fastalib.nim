@@ -21,7 +21,7 @@ proc cnt*(fhm: Memfile): uint32 =
       lastWasNl = false
     pos.inc
 
-proc toString(fhm: MemFile, startPos, endPos: uint32): string =
+proc toString(fhm: MemFile, startPos, endPos: uint32): string {.inline.} =
   result = ""
   for idx in startPos..endPos:
     result.add fhm.mem[idx]
@@ -62,56 +62,58 @@ proc cntReport*(path: string): uint32 =
   result = memfile.cntReport()
   memfile.close()
 
-
 type
   ReportChan = Channel[tuple[path: string, cnt: uint32]]
   ThreadParam = object
     path: string
     chan: ptr ReportChan
 
-
-proc countThread(params: ThreadParam) {.thread, gcsafe.} =
+proc countThread(params: ThreadParam) = # {.thread, gcsafe.} =
   var memfile = memfiles.open(params.path)
   let nums = cnt(memfile)
   params.chan[].send (params.path, nums)
   # memfiles.close(memfile) # excepts SOMETIMES wtf
 
-
-
 when isMainModule:
   import cligen
   import os
-
+  import threadpool
+  import cpuinfo
   var reportChan: ReportChan
+  import json
   reportChan.open()
 
-  var threads: array[1024, Thread[ThreadParam]]
-
-  proc count(paths: string) =
-    ## Counts sequences in fasta files:
+  proc count(paths: string, jsonl = false) =
+    ## Counts sequences in fasta files,
+    ## In contrast to "report" this is threaded and very fast.
     ## Usage:
-    ##  cntfasta count -p myFastaFile.fasta
-    ##  cntfasta count -p *.fasta
+    ##  fastalib count -p myFastaFile.fasta
+    ##  fastalib count -p *.fasta
     var idx = 0
     for path in walkPattern(paths):
-      createThread(
-        threads[idx],
-        countThread,
-        ThreadParam(path: path, chan: addr reportChan)
-      )
+      spawn(countThread(ThreadParam(path: path, chan: addr reportChan)))
       idx.inc
-      # var memfile = memfiles.open(path)
-      # echo cnt(memfile) , "\t", path
-      # memfiles.close(memfile)
+
+    while idx > 0:
+      let msg = reportChan.recv()
+      if jsonl:
+        let js = %* {
+          "path": % msg.path.normalizedPath(),
+          "cnt": % msg.cnt.int
+        }
+        echo ($ js)
+      else:
+        echo msg.cnt, "\t", msg.path.normalizedPath()
+      idx.dec
 
   proc report(paths: string) =
     ## Reports sequences that contains a '>' somewhere in description.
     ## Usage:
-    ##  cntfasta report -p myFastaFile.fasta
-    ##  cntfasta report -p *.fasta
+    ##  fastalib report -p myFastaFile.fasta
+    ##  fastalib report -p *.fasta
     for path in walkPattern(paths):
       var memfile = memfiles.open(path)
-      echo cntReport(memfile) , "\t", path
+      echo cntReport(memfile) , "\t", path.normalizedPath()
       memfiles.close(memfile)
 
-  dispatchMulti([count], [report])
+  dispatchMulti([count, help = {"jsonl": "Prints results as json line by line"}], [report])
