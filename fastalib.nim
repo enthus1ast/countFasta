@@ -62,19 +62,47 @@ proc cntReport*(path: string): uint32 =
   result = memfile.cntReport()
   memfile.close()
 
+
+type
+  ReportChan = Channel[tuple[path: string, cnt: uint32]]
+  ThreadParam = object
+    path: string
+    chan: ptr ReportChan
+
+
+proc countThread(params: ThreadParam) {.thread, gcsafe.} =
+  var memfile = memfiles.open(params.path)
+  let nums = cnt(memfile)
+  params.chan[].send (params.path, nums)
+  # memfiles.close(memfile) # excepts SOMETIMES wtf
+
+
+
 when isMainModule:
   import cligen
   import os
+
+  var reportChan: ReportChan
+  reportChan.open()
+
+  var threads: array[1024, Thread[ThreadParam]]
 
   proc count(paths: string) =
     ## Counts sequences in fasta files:
     ## Usage:
     ##  cntfasta count -p myFastaFile.fasta
     ##  cntfasta count -p *.fasta
+    var idx = 0
     for path in walkPattern(paths):
-      var memfile = memfiles.open(path)
-      echo cnt(memfile) , "\t", path
-      memfiles.close(memfile)
+      createThread(
+        threads[idx],
+        countThread,
+        ThreadParam(path: path, chan: addr reportChan)
+      )
+      idx.inc
+      # var memfile = memfiles.open(path)
+      # echo cnt(memfile) , "\t", path
+      # memfiles.close(memfile)
 
   proc report(paths: string) =
     ## Reports sequences that contains a '>' somewhere in description.
