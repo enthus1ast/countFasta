@@ -2,16 +2,16 @@
 # nim c -d:release --opt:speed -d:danger -r "more.nim"
 import memfiles
 
-template `[]`(mem: pointer, pos: uint): char =
+template `[]`(mem: pointer, pos: uint32): char =
   cast[ptr char](cast[ByteAddress](mem) + pos.ByteAddress)[]
 
-proc cnt*(fhm: Memfile): uint =
+proc cnt*(fhm: Memfile): uint32 =
   ## fastest way (i found) to count sequences in a fasta file
   result = 0
   var lastWasNl = true
-  var pos: uint = 0
+  var pos: uint32 = 0
   while true:
-    if pos > fhm.size.uint: break
+    if pos > fhm.size.uint32: break
     case fhm.mem[pos]
     of '\n':
       lastWasNl = true
@@ -21,21 +21,21 @@ proc cnt*(fhm: Memfile): uint =
       lastWasNl = false
     pos.inc
 
-proc toString(fhm: MemFile, startPos, endPos: uint): string =
+proc toString(fhm: MemFile, startPos, endPos: uint32): string =
   result = ""
   for idx in startPos..endPos:
     result.add fhm.mem[idx]
 
-proc cntReport*(fhm: MemFile): uint =
+proc cntReport*(fhm: MemFile): uint32 =
   ## Reports sequences that contains a '>' somewhere in description.
   result = 0
   var lastWasNl = true
-  var pos: uint = 0
+  var pos: uint32 = 0
   var line = 0
-  var start: uint = 0
+  var start: uint32 = 0
   var isWrong = false
   while true:
-    if pos > fhm.size.uint: break
+    if pos > fhm.size.uint32: break
     case cast[ptr char](cast[ByteAddress](fhm.mem) + pos.ByteAddress)[]
     of '\n':
       if isWrong:
@@ -52,12 +52,12 @@ proc cntReport*(fhm: MemFile): uint =
       lastWasNl = false
     pos.inc
 
-proc cnt*(path: string): uint =
+proc cnt*(path: string): uint32 =
   var memfile = memfiles.open(path)
   result = memfile.cnt()
   memfile.close()
 
-proc cntReport*(path: string): uint =
+proc cntReport*(path: string): uint32 =
   var memfile = memfiles.open(path)
   result = memfile.cntReport()
   memfile.close()
